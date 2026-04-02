@@ -4,6 +4,7 @@ class BoostController {
     constructor() {
         this.isRunning = false;
         this.boostStatus = [];
+        this.pollInterval = null;
     }
 
     async startBoost(selectedAccounts, targetUsername, accountSource = 'personal') {
@@ -32,7 +33,8 @@ class BoostController {
             const data = await response.json();
             
             if (data.success) {
-                this.showMessage('success', 'Boost started successfully!');
+                this.showMessage('success', '✅ Boost started successfully!');
+                this.showStatusTracker();
                 this.pollBoostStatus();
             } else {
                 this.showMessage('error', data.message || 'Failed to start boost');
@@ -40,47 +42,88 @@ class BoostController {
         } catch (error) {
             this.showMessage('error', 'Error connecting to server: ' + error.message);
         }
-
-        this.isRunning = false;
-        this.updateUI();
     }
 
     async pollBoostStatus() {
-        const interval = setInterval(async () => {
+        this.pollInterval = setInterval(async () => {
             try {
                 const response = await fetch('/api/boost-status');
                 const data = await response.json();
                 
-                if (data.status) {
+                if (data.status && data.status.length > 0) {
                     this.boostStatus = data.status;
                     this.renderStatus();
                 }
 
                 if (!data.running) {
-                    clearInterval(interval);
+                    clearInterval(this.pollInterval);
+                    this.isRunning = false;
+                    this.updateUI();
                 }
             } catch (error) {
                 console.error('Status poll error:', error);
             }
-        }, 2000);
+        }, 1000); // Update every 1 second for live feel
     }
 
     stopBoost() {
         fetch('/api/stop-boost', { method: 'POST' });
         this.isRunning = false;
+        if (this.pollInterval) clearInterval(this.pollInterval);
         this.updateUI();
     }
 
     renderStatus() {
-        const statusContainer = document.getElementById('boostStatus');
+        const statusContainer = document.getElementById('statusItems');
         if (!statusContainer) return;
 
-        statusContainer.innerHTML = this.boostStatus.map((status, i) => `
-            <div class="status-item">
-                <span class="status-label">${status.service || `Attempt ${i + 1}`}</span>
-                <span class="status-value">${status.result || 'Processing...'}</span>
-            </div>
-        `).join('');
+        const html = this.boostStatus.map((status, i) => {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = this.getStatusIcon(status);
+            const className = this.getStatusClass(status);
+            
+            return `<div class="status-item ${className}">
+                <div style="flex: 1;">
+                    <span class="status-time">${timestamp}</span>
+                    <span class="status-text">${icon} ${status}</span>
+                </div>
+            </div>`;
+        }).reverse().join('');
+
+        statusContainer.innerHTML = html;
+        
+        // Auto-scroll to bottom
+        const tracker = document.getElementById('boostStatus');
+        if (tracker) {
+            tracker.scrollTop = tracker.scrollHeight;
+        }
+    }
+
+    getStatusIcon(status) {
+        if (status.includes('Success') || status.includes('BOOST STARTED') || status.includes('successfully')) return '✅';
+        if (status.includes('Error') || status.includes('ERROR') || status.includes('Failed')) return '❌';
+        if (status.includes('Login') || status.includes('LOGIN')) return '🔐';
+        if (status.includes('Token') || status.includes('Forgery')) return '🔑';
+        if (status.includes('COMPLETE') || status.includes('completed')) return '🎯';
+        if (status.includes('Checkpoint')) return '⚠️';
+        if (status.includes('Processing')) return '⏳';
+        if (status.includes('SSL') || status.includes('Connection')) return '🌐';
+        return '→';
+    }
+
+    getStatusClass(status) {
+        if (status.includes('Success') || status.includes('successfully')) return 'status-success';
+        if (status.includes('Error') || status.includes('ERROR') || status.includes('Failed')) return 'status-error';
+        if (status.includes('COMPLETE')) return 'status-complete';
+        if (status.includes('Checkpoint') || status.includes('warning')) return 'status-warning';
+        return 'status-info';
+    }
+
+    showStatusTracker() {
+        const tracker = document.getElementById('boostStatus');
+        if (tracker) {
+            tracker.style.display = 'block';
+        }
     }
 
     updateUI() {
@@ -89,6 +132,12 @@ class BoostController {
         
         if (startBtn) startBtn.disabled = this.isRunning;
         if (stopBtn) stopBtn.disabled = !this.isRunning;
+        
+        if (this.isRunning) {
+            if (stopBtn) stopBtn.style.display = 'block';
+        } else {
+            if (stopBtn) stopBtn.style.display = 'none';
+        }
     }
 
     showMessage(type, message) {
@@ -96,7 +145,7 @@ class BoostController {
         msgBox.textContent = message;
         msgBox.className = type + '-msg';
         msgBox.style.display = 'block';
-        setTimeout(() => msgBox.style.display = 'none', 3000);
+        setTimeout(() => msgBox.style.display = 'none', 4000);
     }
 
     createMessageBox() {
@@ -140,6 +189,8 @@ function handleStartBoost() {
     }
 
     const targetUsername = document.getElementById('targetUsername')?.value || '';
+    boostController.isRunning = true;
+    boostController.updateUI();
     boostController.startBoost(selectedAccounts, targetUsername, accountSource);
 }
 

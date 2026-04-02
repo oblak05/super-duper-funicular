@@ -8,11 +8,12 @@
 
 ## 🎨 Features
 
-### 🌟 Core Functionality
+### ⚡ Features
 - ✅ **Multi-Account Management** - Save and manage multiple IG accounts
 - ✅ **User-Isolated Storage** - Each user's accounts stay private (LocalStorage + Database)
 - ✅ **Multi-Account Boosting** - Select multiple accounts to boost single target
 - ✅ **Real-Time Tracking** - Live boost status and progress monitoring
+- ✅ **Detailed Logging** - See exact status like v2.py CLI (Login errors, Forgery tokens, Finished from service)
 - ✅ **Admin Panel** - Global account management & boost execution
 - ✅ **Professional UI** - Cyberpunk neon red-on-black theme
 
@@ -72,7 +73,62 @@
 
 ---
 
-## 🛠️ Tech Stack
+## � Real-Time Logging (Just Like v2.py CLI!)
+
+The web app now shows **identical real-time logs** as the command-line version:
+
+### Status Indicators
+- ✅ **Success** - Account boost succeeded on service
+- ❌ **Error** - Operation failed
+- 🔐 **Login Error** - Username/password incorrect
+- 🔑 **Forgery Token** - Token not found (service issue)
+- 🌐 **Connection** - SSL/Network error
+- ⚠️ **Warning** - Checkpoint detected
+- ⏳ **Processing** - Boost in progress
+- 🎯 **Complete** - Boost finished
+
+### Example Log Output
+
+```
+🚀 BOOST STARTED
+📌 Target: @target_account
+🔤 Using 2 accounts
+⏳ Initializing with 19 services...
+
+🌐 Service [1/19]: INSTAMODA
+  → Attempting with account1...
+  ✅ account1: Success - Success from INSTAMODA SERVICE
+  
+🌐 Service [2/19]: TAKIPCITIME
+  → Attempting with account1...
+  🔐 account1: Login Error - Incorrect Password
+  → Attempting with account2...
+  ✅ account2: Success - Finished from TAKIPCITIME SERVICE
+
+🎯 BOOST EXECUTION COMPLETE
+✅ Successful: 5
+❌ Failed: 2
+📊 Total Attempts: 7
+```
+
+### Color-Coded Display
+
+- 🟢 **Green** - Successful operations
+- 🔴 **Red** - Errors and failures
+- 🟡 **Orange** - Warnings
+- ⚪ **Gray** - Info messages
+- ⚙️ **Monospace Font** - Terminal-like experience
+
+### Live Auto-Scroll
+
+- Logs update in real-time (every 1 second)
+- Auto-scrolls to latest message
+- Scrollable history (last 50+ messages visible)
+- Terminal-like scrollbar with neon styling
+
+---
+
+## �🛠️ Tech Stack
 
 ### Frontend
 - **HTML5** - Semantic markup
@@ -221,47 +277,28 @@ The app will start at: `http://127.0.0.1:5000`
 
 ## 🌐 Deployment
 
-### On Replit
-1. Create new Replit project
-2. Connect GitHub repository
-3. Run `pip install -r requirements.txt`
-4. Click "Run" or execute `python app.py`
-5. Share generated Replit URL
+### Quick Deploy to Vercel ⚡
 
-### On Heroku
+Deploy your IG FFS app to Vercel in minutes:
+
 ```bash
-heroku create your-app-name
-git push heroku main
+# 1. Push to GitHub
+git add -A && git commit -m "Deploy to Vercel" && git push
+
+# 2. Go to vercel.com
+# 3. Import repository
+# 4. Deploy!
 ```
 
-### On Termux (Android)
-```bash
-# In Termux
-pkg update && pkg upgrade
-pkg install python git
+**For complete step-by-step guide, see:** [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
 
-git clone https://github.com/oblak05/super-duper-funicular.git
-cd super-duper-funicular
+### Deployment Options
 
-pip install -r requirements.txt
-python app.py
-
-# Access at http://127.0.0.1:5000
-```
-
-### Network Access
-To access from another device on same WiFi:
-```python
-# In app.py, change last line to:
-app.run(debug=False, host='0.0.0.0', port=5000)
-
-# Find your IP:
-# Linux/Mac: ipconfig | grep "inet "
-# Windows: ipconfig
-
-# Access from other device:
-# http://YOUR_IP:5000
-```
+- ✅ **Vercel** (Recommended) - See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+- ✅ **Replit** - Fork and run
+- ✅ **Heroku** - Use Procfile
+- ✅ **Termux** (Android) - Local terminal
+- ✅ **Linux/Mac** - Direct Python execution
 
 ---
 

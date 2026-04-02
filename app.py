@@ -210,11 +210,15 @@ def admin_logout():
 # ===== BOOST ENGINE =====
 
 def _run_multi_account_boost(accounts, target_username, account_source):
-    """Multi-account boost execution"""
+    """Multi-account boost execution with detailed logging"""
     global boost_running, boost_status
     
     try:
-        boost_status = [f"🚀 BOOST STARTED - Target: {target_username}"]
+        boost_status = []
+        boost_status.append(f"🚀 BOOST STARTED")
+        boost_status.append(f"📌 Target: @{target_username}")
+        boost_status.append(f"🔤 Using {len(accounts)} accounts")
+        time.sleep(1)
         
         # Get database accounts
         db = load_db(DB_PATH)
@@ -235,10 +239,17 @@ def _run_multi_account_boost(accounts, target_username, account_source):
         success_count = 0
         failed_count = 0
         
+        boost_status.append(f"⏳ Initializing with {len(hosts)} services...")
+        time.sleep(2)
+        
         # Execute boost with each account on each service
         for service_idx, service in enumerate(hosts):
             if not boost_running:
+                boost_status.append("❌ BOOST STOPPED BY USER")
                 break
+            
+            service_clean = service.split('.')[0].upper()
+            boost_status.append(f"\n🌐 Service [{service_idx + 1}/{len(hosts)}]: {service_clean}")
             
             for acc_idx, account in enumerate(accounts):
                 if not boost_running:
@@ -248,39 +259,63 @@ def _run_multi_account_boost(accounts, target_username, account_source):
                 password = account_credentials.get(username)
                 
                 if not password:
-                    boost_status.append(f"❌ Account {username} - credentials not found")
+                    boost_status.append(f"  ❌ {username} - Credentials not found in database")
                     failed_count += 1
                     continue
                 
                 try:
+                    boost_status.append(f"  → Attempting with {username}...")
+                    
                     with requests.Session() as sess:
                         result, message = SENDER().SEND_FOLLOWERS(
                             sess, username, password, service, target_username
                         )
                         
                         if result:
-                            boost_status.append(f"✅ {username} @ {service} - {message}")
+                            boost_status.append(f"  ✅ {username}: Success - {message}")
                             success_count += 1
                         else:
-                            boost_status.append(f"❌ {username} @ {service} - {message}")
+                            # Parse message for specific errors
+                            if "Forgery" in message:
+                                boost_status.append(f"  🔑 {username}: Forgery Token Not Found")
+                            elif "Login" in message or "checkpoint" in message:
+                                boost_status.append(f"  🔐 {username}: Login Error - {message}")
+                            elif "password" in message.lower():
+                                boost_status.append(f"  🚫 {username}: Incorrect Password")
+                            elif "FINISHED FROM" in message:
+                                boost_status.append(f"  ✓ {username}: Finished from {service_clean}")
+                            else:
+                                boost_status.append(f"  ❌ {username}: {message}")
                             failed_count += 1
                         
-                        time.sleep(2)
+                        time.sleep(1)
                 
-                except SSLError:
-                    boost_status.append(f"⚠️ {service} - SSL Error")
+                except SSLError as ssl_err:
+                    boost_status.append(f"  🌐 {username} @ {service_clean}: Connection Error (SSL)")
+                    failed_count += 1
+                    time.sleep(2)
+                except RequestException as req_err:
+                    boost_status.append(f"  🌐 {username} @ {service_clean}: Network Error")
                     failed_count += 1
                     time.sleep(2)
                 except Exception as e:
-                    boost_status.append(f"❌ {username} - Error: {str(e)[:50]}")
+                    err_msg = str(e)[:40]
+                    boost_status.append(f"  ⚠️ {username}: {err_msg}")
                     failed_count += 1
-                    time.sleep(2)
+                    time.sleep(1)
+            
+            time.sleep(2)
         
-        # Final status
-        boost_status.append(f"🎯 BOOST COMPLETE - Success: {success_count}, Failed: {failed_count}")
+        # Final summary
+        boost_status.append(f"\n{'='*50}")
+        boost_status.append(f"🎯 BOOST EXECUTION COMPLETE")
+        boost_status.append(f"✅ Successful: {success_count}")
+        boost_status.append(f"❌ Failed: {failed_count}")
+        boost_status.append(f"📊 Total Attempts: {success_count + failed_count}")
+        boost_status.append(f"{'='*50}")
         
     except Exception as e:
-        boost_status.append(f"💥 CRITICAL ERROR: {str(e)}")
+        boost_status.append(f"💥 CRITICAL ERROR: {str(e)[:100]}")
     
     finally:
         boost_running = False
