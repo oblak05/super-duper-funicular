@@ -65,7 +65,6 @@
 - Direct Messenger link: `https://m.me/gueverro.vestio`
 
 ### 🛡️ Admin Panel (`/admin`)
-- **Login**: `gueverro` / `kalbo123`
 - System statistics (users, accounts, boosts)
 - IG account management
 - Global boost execution
