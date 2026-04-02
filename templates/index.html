@@ -3,47 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Follower Bot</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        form { margin-bottom: 20px; }
-        input { margin: 5px; padding: 8px; }
-        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .status { margin-top: 20px; }
-        .message { padding: 10px; margin: 5px 0; border-radius: 5px; }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
-    </style>
+    <title>IG FFS - QXZI Boosting Tools</title>
+    <link rel="stylesheet" href="/static/css/cyberpunk.css">
 </head>
 <body>
-    <h1>Instagram Follower Bot</h1>
-    <form action="/start" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        <label for="target_username">Target Username:</label>
-        <input type="text" id="target_username" name="target_username" required><br>
-        <button type="submit">Start Bot</button>
-    </form>
-    {% if running %}
-    <a href="/stop"><button>Stop Bot</button></a>
-    {% endif %}
-    <div class="status">
-        <h2>Status</h2>
-        {% for msg in status %}
-        <div class="message {% if 'Error' in msg or 'Failed' in msg or 'Unable' in msg %}error{% else %}success{% endif %}">{{ msg }}</div>
-        {% endfor %}
-    </div>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <div class="status">
-        {% for message in messages %}
-        <div class="message success">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+    <header>
+        <div class="header-container">
+            <div class="logo">IG <span>FFS</span></div>
+            <nav>
+                <a href="/" class="active">Home</a>
+                <a href="/accounts-center">Account Center</a>
+                <a href="/boost">Boost</a>
+                <a href="/report">Report</a>
+                <a href="/admin" style="color: #FF1744;">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1><span class="neon">IG FFS</span></h1>
+            <p class="subtitle">Multi-Account IG Boosting Engine</p>
+            <p style="color: #b0b0b0; margin: 20px 0; font-size: 14px;">
+                Powered by QXZI Boosting Tools | Professional Instagram Follower Distribution
+            </p>
+            <a href="/accounts-center" class="cta-button glow-btn">MANAGE IG ACCOUNTS</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 36px; color: #FF1744; margin-bottom: 10px;">⚡</div>
+                <h3 style="color: #FF1744;">MULTI-ACCOUNT</h3>
+                <p style="color: #b0b0b0; font-size: 14px;">Manage and boost with multiple accounts</p>
+            </div>
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 36px; color: #FF1744; margin-bottom: 10px;">🔒</div>
+                <h3 style="color: #FF1744;">USER-ISOLATED</h3>
+                <p style="color: #b0b0b0; font-size: 14px;">Your accounts stay private and secure</p>
+            </div>
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 36px; color: #FF1744; margin-bottom: 10px;">📊</div>
+                <h3 style="color: #FF1744;">REAL-TIME</h3>
+                <p style="color: #b0b0b0; font-size: 14px;">Track boosts in real-time</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; border: 1px solid rgba(255, 23, 68, 0.3); background: rgba(255, 23, 68, 0.05);">
+            <h3 style="color: #FF1744; margin-bottom: 15px;">🚀 QUICK START</h3>
+            <ol style="color: #b0b0b0; font-size: 14px; line-height: 2;">
+                <li>Go to <strong>Account Center</strong> to save your IG accounts</li>
+                <li>Select accounts and go to <strong>Boost</strong> page</li>
+                <li>Enter target IG username and click <strong>START BOOST</strong></li>
+                <li>Watch real-time progress and tracking</li>
+            </ol>
+        </div>
+    </main>
+
+    <footer>
+        <p>IG FFS © 2026 QXZI Boosting Tools | Cyberpunk Edition</p>
+    </footer>
 </body>
 </html>

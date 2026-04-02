@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Center - IG FFS</title>
+    <link rel="stylesheet" href="/static/css/cyberpunk.css">
+    <script src="/static/js/ig-account-manager.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">IG <span>FFS</span></div>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/accounts-center" class="active">Account Center</a>
+                <a href="/boost">Boost</a>
+                <a href="/report">Report</a>
+                <a href="/admin" style="color: #FF1744;">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <h2>IG Account <span class="neon">Vault</span></h2>
+        <p class="subtitle">Manage your saved Instagram accounts</p>
+
+        <!-- Message Box -->
+        <div id="accountMessage" style="display: none;"></div>
+
+        <!-- Tabs for Admin -->
+        <div id="adminTabs" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="switchAdminTab('my')">MY SAVED (User)</button>
+                <button class="tab" onclick="switchAdminTab('all')">ALL SAVED (Admin)</button>
+            </div>
+        </div>
+
+        <!-- My Saved Accounts -->
+        <div id="myAccountsSection">
+            <h3 style="color: #FF1744; margin-bottom: 20px;">My Saved IG Accounts</h3>
+            <div id="myAccounts" class="account-vault"></div>
+
+            <!-- Add New Account Form -->
+            <div class="card glow-border" style="margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;">Add New IG Account</h3>
+                <form id="addAccountForm">
+                    <div class="form-group">
+                        <label for="newUsername">Instagram Username</label>
+                        <input type="text" id="newUsername" placeholder="your_ig_username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Instagram Password</label>
+                        <input type="password" id="newPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="glow-btn" style="padding: 12px 30px; width: 100%;">
+                        SAVE IG ACCOUNT
+                    </button>
+                </form>
+            </div>
+
+            <!-- Next Step CTA -->
+            <div style="margin-top: 30px; padding: 20px; border: 1px solid rgba(255, 23, 68, 0.3); background: rgba(255, 23, 68, 0.05);">
+                <p style="color: #b0b0b0; margin-bottom: 15px;">✅ When ready, go to the <strong>Boost page</strong> to select accounts and start boosting:</p>
+                <a href="/boost" class="cta-button glow-btn" style="display: inline-block; padding: 12px 30px;">
+                    GO TO BOOST PAGE →
+                </a>
+            </div>
+        </div>
+
+        <!-- All Accounts (Admin Only) -->
+        <div id="allAccountsSection" style="display: none;">
+            <h3 style="color: #FF1744; margin-bottom: 20px;">All Saved IG Accounts (Site-Wide)</h3>
+            <div id="allAccounts" class="account-vault"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>IG FFS © 2026 QXZI Boosting Tools | Cyberpunk Edition</p>
+    </footer>
+
+    <script>
+        // Check if admin
+        function isAdmin() {
+            return sessionStorage.getItem('adminLoggedIn') === 'true';
+        }
+
+        // Show admin tabs if logged in
+        if (isAdmin()) {
+            document.getElementById('adminTabs').style.display = 'block';
+        }
+
+        // Tab switching for admin
+        function switchAdminTab(tab) {
+            if (tab === 'my') {
+                document.getElementById('myAccountsSection').style.display = 'block';
+                document.getElementById('allAccountsSection').style.display = 'none';
+            } else {
+                document.getElementById('myAccountsSection').style.display = 'none';
+                document.getElementById('allAccountsSection').style.display = 'block';
+                loadAllAccounts();
+            }
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Load all accounts from server (admin)
+        async function loadAllAccounts() {
+            if (!isAdmin()) return;
+            
+            try {
+                const response = await fetch('/api/all-ig-accounts');
+                const data = await response.json();
+                
+                const container = document.getElementById('allAccounts');
+                if (data.accounts && data.accounts.length > 0) {
+                    container.innerHTML = data.accounts.map(acc => `
+                        <div class="account-card">
+                            <div>
+                                <span class="account-username">${acc.username}</span>
+                                <div style="font-size: 11px; color: #808080; margin-top: 8px;">
+                                    User: ${acc.user_id}<br>
+                                    Added: ${new Date(acc.created_at).toLocaleDateString()}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color: #b0b0b0;">No accounts saved yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - IG FFS</title>
+    <link rel="stylesheet" href="/static/css/cyberpunk.css">
+    <script src="/static/js/boost-controller.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">IG <span>FFS</span></div>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/admin" class="active" style="color: #FF1744;">Admin</a>
+                <button class="logout-btn" onclick="adminLogout()">LOGOUT</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div id="loginPanel">
+            <div class="hero">
+                <h1><span class="neon">ADMIN</span> PANEL</h1>
+                <p class="subtitle">Secure Access Required</p>
+            </div>
+
+            <div class="card glow-border" style="max-width: 400px; margin: 0 auto;">
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label for="adminUsername">Username</label>
+                        <input type="text" id="adminUsername" placeholder="admin" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="glow-btn" style="padding: 12px 30px; width: 100%;">
+                        ACCESS ADMIN PANEL
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard (Hidden by default) -->
+        <div id="adminDashboard" style="display: none;">
+            <h2>Admin <span class="neon">Dashboard</span></h2>
+
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAccounts">0</div>
+                    <div class="stat-label">IG Accounts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBoosts">0</div>
+                    <div class="stat-label">Boosts Executed</div>
+                </div>
+            </div>
+
+            <!-- IG Account Management -->
+            <div class="admin-section">
+                <h3 style="color: #FF1744; margin-bottom: 20px;">IG Account Management</h3>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchAdminSection('accounts')">All IG Accounts</button>
+                    <button class="tab" onclick="switchAdminSection('boost')">Execute Boost</button>
+                    <button class="tab" onclick="switchAdminSection('export')">Export Data</button>
+                </div>
+
+                <!-- All Accounts Section -->
+                <div id="accountsSection" data-section="accounts" class="card glow-border">
+                    <h3 style="margin-bottom: 20px;">All Saved IG Accounts (Site-Wide)</h3>
+                    <div id="allAccountsList" class="account-vault"></div>
+                </div>
+
+                <!-- Execute Boost Section -->
+                <div id="boostSection" data-section="boost" class="card glow-border" style="display: none;">
+                    <h3 style="margin-bottom: 20px;">Global Boost Execution</h3>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color: #FF1744; margin-bottom: 15px;">Select IG Accounts</h4>
+                        <div id="globalBoostAccounts" class="account-vault"></div>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <label for="globalTargetUsername" style="display: block; margin-bottom: 10px; color: #b0b0b0; text-transform: uppercase;">Target IG Username</label>
+                        <input type="text" id="globalTargetUsername" placeholder="target_username" style="margin-bottom: 20px;">
+                    </div>
+
+                    <button class="glow-btn" style="padding: 12px 40px;" onclick="handleGlobalBoost()">
+                        EXECUTE GLOBAL BOOST
+                    </button>
+                </div>
+
+                <!-- Export Section -->
+                <div id="exportSection" data-section="export" class="card glow-border" style="display: none;">
+                    <h3 style="margin-bottom: 20px;">Export All Data</h3>
+                    <p style="color: #b0b0b0; margin-bottom: 20px;">Download all saved IG accounts as JSON file for backup or analysis.</p>
+                    <button class="glow-btn" style="padding: 12px 40px;" onclick="exportAllAccounts()">
+                        📥 EXPORT AS JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>IG FFS © 2026 QXZI Boosting Tools | Admin Panel</p>
+    </footer>
+
+    <script>
+        const ADMIN_USERNAME = 'gueverro';
+        const ADMIN_PASSWORD = 'kalbo123';
+
+        // Check if already logged in
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            showAdminDashboard();
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                showAdminDashboard();
+            } else {
+                alert('Invalid credentials!');
+            }
+        });
+
+        function showAdminDashboard() {
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            loadAdminData();
+        }
+
+        function switchAdminSection(section) {
+            document.querySelectorAll('[data-section]').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.getElementById(section + 'Section').style.display = 'block';
+
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (section === 'boost') {
+                loadGlobalAccounts();
+            } else if (section === 'accounts') {
+                loadAllAccounts();
+            }
+        }
+
+        async function loadAdminData() {
+            try {
+                const response = await fetch('/api/admin-stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                document.getElementById('totalAccounts').textContent = stats.total_accounts || 0;
+                document.getElementById('totalBoosts').textContent = stats.total_boosts || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadAllAccounts() {
+            try {
+                const response = await fetch('/api/all-ig-accounts');
+                const data = await response.json();
+                
+                const container = document.getElementById('allAccountsList');
+                if (data.accounts && data.accounts.length > 0) {
+                    container.innerHTML = data.accounts.map(acc => `
+                        <div class="account-card">
+                            <span class="account-username">${acc.username}</span>
+                            <div style="font-size: 11px; color: #808080; margin-top: 8px;">
+                                User ID: ${acc.user_id}<br>
+                                Added: ${new Date(acc.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color: #b0b0b0;">No accounts saved yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadGlobalAccounts() {
+            try {
+                const response = await fetch('/api/all-ig-accounts');
+                const data = await response.json();
+                
+                const container = document.getElementById('globalBoostAccounts');
+                if (data.accounts && data.accounts.length > 0) {
+                    container.innerHTML = data.accounts.map(acc => `
+                        <div class="account-card">
+                            <label style="display: flex; cursor: pointer;">
+                                <input type="checkbox" class="global-account-checkbox" data-username="${acc.username}">
+                                <span class="account-username" style="margin-left: 10px;">${acc.username}</span>
+                            </label>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function handleGlobalBoost() {
+            const checkboxes = document.querySelectorAll('.global-account-checkbox:checked');
+            const accounts = Array.from(checkboxes).map(cb => ({
+                username: cb.dataset.username
+            }));
+            const target = document.getElementById('globalTargetUsername').value;
+
+            if (accounts.length === 0 || !target) {
+                alert('Please select accounts and enter target username');
+                return;
+            }
+
+            boostController.startBoost(accounts, target, 'admin');
+        }
+
+        function exportAllAccounts() {
+            fetch('/api/all-ig-accounts')
+                .then(r => r.json())
+                .then(data => {
+                    const element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2)));
+                    element.setAttribute('download', 'ig_accounts_export.json');
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                });
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

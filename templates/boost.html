@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boost - IG FFS</title>
+    <link rel="stylesheet" href="/static/css/cyberpunk.css">
+    <script src="/static/js/ig-account-manager.js"></script>
+    <script src="/static/js/boost-controller.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">IG <span>FFS</span></div>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/accounts-center">Account Center</a>
+                <a href="/boost" class="active">Boost</a>
+                <a href="/report">Report</a>
+                <a href="/admin" style="color: #FF1744;">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <h2>IG Account <span class="neon">Booster</span></h2>
+        <p class="subtitle">Select accounts and start boosting</p>
+
+        <!-- Message Box -->
+        <div id="boostMessage" style="display: none;"></div>
+
+        <!-- Account Source Selection (Admin) -->
+        <div id="adminControlPanel" style="display: none; margin-bottom: 30px;">
+            <div class="tabs">
+                <button class="tab active" onclick="switchBoostTab('personal')">MY SAVED</button>
+                <button class="tab" onclick="switchBoostTab('all')">ALL SAVED</button>
+            </div>
+            <input type="hidden" id="accountSource" value="personal">
+        </div>
+
+        <!-- Personal Accounts (Regular User) -->
+        <div id="personalAccountsTab">
+            <div class="card glow-border">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>My Selected IG Accounts</h3>
+                    <span id="selectedCount" style="color: #FF1744; font-weight: bold;">0 active</span>
+                </div>
+                
+                <div id="myBoostAccounts" class="account-vault" style="margin-bottom: 30px;">
+                    <p style="color: #b0b0b0;">No accounts saved yet. <a href="/accounts-center" style="color: #FF1744;">Go to Account Center</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Accounts (Admin) -->
+        <div id="allAccountsTab" style="display: none;">
+            <div class="card glow-border">
+                <h3 style="margin-bottom: 20px;">All Available IG Accounts</h3>
+                <div id="allBoostAccounts" class="account-vault"></div>
+            </div>
+        </div>
+
+        <!-- Target Username Input -->
+        <div class="card glow-border" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 20px;">Target Account</h3>
+            <div class="form-group">
+                <label for="targetUsername">Target IG Username</label>
+                <input type="text" id="targetUsername" placeholder="target_username" autocomplete="off">
+            </div>
+        </div>
+
+        <!-- Start/Stop Buttons -->
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+            <button id="startBoostBtn" class="glow-btn" style="padding: 16px 40px; font-weight: bold; flex: 1;" onclick="handleStartBoost()">
+                ▶ START BOOST
+            </button>
+            <button id="stopBoostBtn" class="glow-btn" style="padding: 16px 40px; font-weight: bold; flex: 1; background: transparent; border: 2px solid #FF1744; color: #FF1744; display: none;" onclick="boostController.stopBoost()">
+                ⏹ STOP BOOST
+            </button>
+        </div>
+
+        <!-- Real-Time Status Tracker -->
+        <div id="boostStatus" class="status-tracker" style="display: none; margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #FF1744;">Real-Time Boost Tracking</h3>
+                <span class="loading"></span>
+            </div>
+            <div id="statusItems"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>IG FFS © 2026 QXZI Boosting Tools | Cyberpunk Edition</p>
+    </footer>
+
+    <script>
+        // Check if admin
+        function isAdmin() {
+            return sessionStorage.getItem('adminLoggedIn') === 'true';
+        }
+
+        // Show admin controls if logged in
+        if (isAdmin()) {
+            document.getElementById('adminControlPanel').style.display = 'block';
+        }
+
+        // Render personal accounts
+        function renderPersonalAccountsForBoost() {
+            const accounts = igManager.getAccounts();
+            const container = document.getElementById('myBoostAccounts');
+            
+            if (accounts.length === 0) {
+                container.innerHTML = '<p style="color: #b0b0b0;">No accounts saved yet. <a href="/accounts-center" style="color: #FF1744;">Go to Account Center</a></p>';
+                return;
+            }
+
+            container.innerHTML = accounts.map(acc => `
+                <div class="account-card">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" class="account-checkbox" data-id="${acc.id}" data-username="${acc.username}" onchange="updateSelectedCount()">
+                        <span class="account-username" style="margin-left: 10px;">${acc.username}</span>
+                    </label>
+                </div>
+            `).join('');
+
+            updateSelectedCount();
+        }
+
+        // Update selected count
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.account-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = selected + ' active';
+        }
+
+        // Load all accounts for boost (admin)
+        async function loadAllAccountsForBoost() {
+            if (!isAdmin()) return;
+            
+            try {
+                const response = await fetch('/api/all-ig-accounts');
+                const data = await response.json();
+                
+                const container = document.getElementById('allBoostAccounts');
+                if (data.accounts && data.accounts.length > 0) {
+                    container.innerHTML = data.accounts.map(acc => `
+                        <div class="account-card">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" class="all-account-checkbox" data-id="${acc.id}" data-username="${acc.username}">
+                                <div style="margin-left: 10px;">
+                                    <span class="account-username">${acc.username}</span>
+                                    <div style="font-size: 11px; color: #808080;">User: ${acc.user_id}</div>
+                                </div>
+                            </label>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color: #b0b0b0;">No accounts available.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Tab switching
+        function switchBoostTab(tab) {
+            document.getElementById('accountSource').value = tab;
+            
+            if (tab === 'personal') {
+                document.getElementById('personalAccountsTab').style.display = 'block';
+                document.getElementById('allAccountsTab').style.display = 'none';
+                renderPersonalAccountsForBoost();
+            } else {
+                document.getElementById('personalAccountsTab').style.display = 'none';
+                document.getElementById('allAccountsTab').style.display = 'block';
+                loadAllAccountsForBoost();
+            }
+
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Initial render
+        renderPersonalAccountsForBoost();
+    </script>
+</body>
+</html>
