@@ -78,51 +78,54 @@ class SENDER:
                     if '\'status\': \'success\'' in str(self.JSON_RESPONSE4):
                         SUCCESS.append(f'{self.JSON_RESPONSE4}')
                         STATUS.append(f'{self.JSON_RESPONSE4}')
+                        printf(f"[bold bright_black]   ──>[bold green] FINISH FROM {str(host).split('.')[0].upper()} SERVICE!           ", end='\r')
+                        time.sleep(5.0)
+                        return (True, f"Success from {host}")
                     elif '\'code\': \'nocreditleft\'' in str(self.JSON_RESPONSE4):
                         printf(f"[bold bright_black]   ──>[bold red] YOUR CREDITS HAVE RAN OUT!          ", end='\r')
                         time.sleep(4.5)
+                        return (False, "Your credits have ran out!")
                     elif '\'code\': \'nouserleft\'' in str(self.JSON_RESPONSE4):
                         printf(f"[bold bright_black]   ──>[bold red] NO USERS FOUND!                     ", end='\r')
                         time.sleep(4.5)
+                        return (False, "No users found!")
                     elif 'istek engellendi.' in str(self.JSON_RESPONSE4):
                         RETRY.append(f'{self.JSON_RESPONSE4}')
                         if len(RETRY) >= 3:
                             RETRY.clear()
                             printf(f"[bold bright_black]   ──>[bold red] REQUEST TO SEND FOLLOWERS BLOCKED!  ", end='\r')
                             time.sleep(4.5)
-                            return (False)
+                            return (False, "Request to send followers blocked!")
                         else:
-                            self.SEND_FOLLOWERS(session, username, password, host, target_username)
+                            return self.SEND_FOLLOWERS(session, username, password, host, target_username)
                     else:
                         FAILED.append(f'{self.JSON_RESPONSE4}')
                         printf(f"[bold bright_black]   ──>[bold red] ERROR WHILE SENDING FOLLOWERS!      ", end='\r')
                         time.sleep(4.5)
-                    printf(f"[bold bright_black]   ──>[bold green] FINISH FROM {str(host).split('.')[0].upper()} SERVICE!           ", end='\r')
-                    time.sleep(5.0)
-                    return (True)
+                        return (False, "Error while sending followers!")
                 else:
                     printf(f"[bold bright_black]   ──>[bold red] TARGET USERNAME NOT FOUND!           ", end='\r')
                     time.sleep(4.5)
-                    return (False)
+                    return (False, "Target username not found!")
             elif 'Güvenliksiz giriş tespit edildi.' in str(self.JSON_RESPONSE):
                 CHECKPOINT.append(f'{self.JSON_RESPONSE}')
                 printf(f"[bold bright_black]   ──>[bold red] YOUR ACCOUNT IS CHECKPOINT!          ", end='\r')
                 time.sleep(4.5)
-                return (False)
+                return (False, "Your account is checkpoint!")
             elif 'Üzgünüz, şifren yanlıştı.' in str(self.JSON_RESPONSE):
                 BAD.append(f'{self.JSON_RESPONSE}')
                 printf(f"[bold bright_black]   ──>[bold red] YOUR PASSWORD IS WRONG!              ", end='\r')
                 time.sleep(4.5)
-                return (False)
+                return (False, "Your password is wrong!")
             else:
                 LOGIN_FAILED.append(f'{self.JSON_RESPONSE}')
                 printf(f"[bold bright_black]   ──>[bold red] LOGIN ERROR!                          ", end='\r')
                 time.sleep(4.5)
-                return (False)
+                return (False, "Login error!")
         else:
             printf(f"[bold bright_black]   ──>[bold red] FORGERY TOKEN NOT FOUND!          ", end='\r')
             time.sleep(2.5)
-            return (False)
+            return (False, "Forgery token not found!")
 
 class INFO:
 

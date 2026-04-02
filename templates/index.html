@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Follower Bot</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; }
+        input { margin: 5px; padding: 8px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .status { margin-top: 20px; }
+        .message { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Instagram Follower Bot</h1>
+    <form action="/start" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+        <label for="target_username">Target Username:</label>
+        <input type="text" id="target_username" name="target_username" required><br>
+        <button type="submit">Start Bot</button>
+    </form>
+    {% if running %}
+    <a href="/stop"><button>Stop Bot</button></a>
+    {% endif %}
+    <div class="status">
+        <h2>Status</h2>
+        {% for msg in status %}
+        <div class="message {% if 'Error' in msg or 'Failed' in msg or 'Unable' in msg %}error{% else %}success{% endif %}">{{ msg }}</div>
+        {% endfor %}
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="status">
+        {% for message in messages %}
+        <div class="message success">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>
