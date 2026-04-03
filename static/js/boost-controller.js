@@ -77,24 +77,28 @@ class BoostController {
         const statusContainer = document.getElementById('statusItems');
         if (!statusContainer) return;
 
+        const tracker = document.getElementById('boostStatus');
+        const isAtBottom = tracker
+            ? tracker.scrollTop + tracker.clientHeight >= tracker.scrollHeight - 20
+            : false;
+
         const html = this.boostStatus.map((status, i) => {
             const timestamp = new Date().toLocaleTimeString();
             const icon = this.getStatusIcon(status);
             const className = this.getStatusClass(status);
-            
+
             return `<div class="status-item ${className}">
                 <div style="flex: 1;">
                     <span class="status-time">${timestamp}</span>
                     <span class="status-text">${icon} ${status}</span>
                 </div>
             </div>`;
-        }).reverse().join('');
+        }).join('');
 
         statusContainer.innerHTML = html;
-        
-        // Auto-scroll to bottom
-        const tracker = document.getElementById('boostStatus');
-        if (tracker) {
+
+        // Auto-scroll only if user is at or near the bottom
+        if (tracker && isAtBottom) {
             tracker.scrollTop = tracker.scrollHeight;
         }
     }
