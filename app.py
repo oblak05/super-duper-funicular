@@ -231,10 +231,7 @@ def _run_multi_account_boost(accounts, target_username, account_source):
         # List of boost services
         hosts = [
             'instamoda.org', 'takipcitime.com', 'takipcikrali.com', 'bigtakip.net',
-            'takipcimx.net', 'fastfollow.in', 'anatakip.com', 'bayitakipci.com',
-            'takipcisatinal.com.tr', 'takipmax.com', 'takipgo.com', 'takipcizen.com',
-            'sosyora.com.tr', 'takipcikutusu.com', 'takipcibase.com', 'takipcigir.com',
-            'platintakipci.com', 'Instahile.co', 'Seritakipci.com'
+            'takipcimx.net'
         ]
         
         success_count = 0
